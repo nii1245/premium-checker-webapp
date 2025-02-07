@@ -146,6 +146,9 @@
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#000000');
 
+        // Очищаем localStorage при запуске (временно для тестирования)
+        localStorage.clear();
+
         // Показываем нужный экран при запуске
         if (!localStorage.getItem('agreementAccepted')) {
             document.getElementById('agreement').style.display = 'block';
@@ -174,19 +177,9 @@
         }
 
         function skipGroup() {
-            tg.showPopup({
-                title: 'Внимание!',
-                message: 'Если бот не является администратором вашей группы, будет взиматься комиссия с каждого отправленного подарка.',
-                buttons: [{
-                    id: 'continue',
-                    type: 'default',
-                    text: 'Продолжить'
-                }]
-            }).then(() => {
-                localStorage.setItem('groupSetup', 'skipped');
-                document.getElementById('groupSetup').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-            });
+            localStorage.setItem('groupSetup', 'skipped');
+            document.getElementById('groupSetup').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
         }
 
         // Функции главного меню
