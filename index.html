@@ -12,6 +12,14 @@
             padding: 16px;
         }
 
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
         /* Минималистичные кнопки */
         .button {
             background: transparent;
@@ -30,15 +38,22 @@
             color: white;
         }
 
-        /* Стиль для инпутов */
-        input {
+        /* Поле ввода */
+        .input-field {
             background: #111111;
             border: none;
             color: white;
             padding: 12px;
-            width: 100%;
+            width: calc(100% - 24px);
             font-size: 16px;
             margin: 8px 0;
+        }
+
+        /* Заголовок */
+        .title {
+            color: #808080;
+            font-size: 14px;
+            margin: 24px 0 12px 0;
         }
 
         /* Баланс */
@@ -50,7 +65,7 @@
             border-bottom: 1px solid #222222;
         }
 
-        /* Стрелка и иконки */
+        /* Стрелка */
         .arrow {
             color: #555555;
             margin-right: 12px;
@@ -59,25 +74,75 @@
     </style>
 </head>
 <body>
-    <div id="mainContent">
+    <!-- Главное меню -->
+    <div id="mainScreen" class="screen active">
         <div class="balance">
             ⭐ <span id="balanceAmount">0 XTR</span>
         </div>
 
-        <button class="button" onclick="addBalance()">
+        <button class="button" onclick="showScreen('balance')">
             <span class="arrow">├──</span>Пополнить баланс
         </button>
-        <button class="button" onclick="startAnalysis()">
+        <button class="button" onclick="showScreen('analysis')">
             <span class="arrow">├──</span>Запустить анализ
         </button>
-        <button class="button" onclick="showMyStats()">
+        <button class="button" onclick="showScreen('stats')">
             <span class="arrow">├──</span>Моя статистика
         </button>
-        <button class="button" onclick="showGlobalStats()">
+        <button class="button" onclick="showScreen('global')">
             <span class="arrow">├──</span>Общая статистика
         </button>
-        <button class="button" onclick="showSettings()">
+        <button class="button" onclick="showScreen('settings')">
             <span class="arrow">└──</span>Настройки
+        </button>
+    </div>
+
+    <!-- Экран анализа -->
+    <div id="analysisScreen" class="screen">
+        <div class="title">Анализ группы</div>
+        <input type="text" class="input-field" placeholder="Введите @username группы">
+        <button class="button" onclick="startAnalysis()">
+            <span class="arrow">└──</span>Запустить
+        </button>
+        <button class="button" onclick="showScreen('main')">
+            <span class="arrow">└──</span>Назад
+        </button>
+    </div>
+
+    <!-- Экран баланса -->
+    <div id="balanceScreen" class="screen">
+        <div class="title">Пополнение баланса</div>
+        <button class="button">
+            <span class="arrow">├──</span>5 XTR
+        </button>
+        <button class="button">
+            <span class="arrow">├──</span>10 XTR
+        </button>
+        <button class="button">
+            <span class="arrow">├──</span>15 XTR
+        </button>
+        <button class="button">
+            <span class="arrow">├──</span>Другая сумма
+        </button>
+        <button class="button" onclick="showScreen('main')">
+            <span class="arrow">└──</span>Назад
+        </button>
+    </div>
+
+    <!-- Остальные экраны -->
+    <div id="statsScreen" class="screen">
+        <div class="title">Моя статистика</div>
+        <div class="button">
+            <span class="arrow">├──</span>Баланс: 0 XTR
+        </div>
+        <div class="button">
+            <span class="arrow">├──</span>Подписчиков: 0
+        </div>
+        <div class="button">
+            <span class="arrow">├──</span>Анализов: 0
+        </div>
+        <button class="button" onclick="showScreen('main')">
+            <span class="arrow">└──</span>Назад
         </button>
     </div>
 
@@ -89,99 +154,24 @@
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#000000');
 
-        // Проверяем первый запуск
-        if (!localStorage.getItem('agreementAccepted')) {
-            showAgreement();
-        }
-
-        function showAgreement() {
-            tg.showPopup({
-                title: 'Соглашение',
-                message: '├── Анализ активности пользователей\n' +
-                        '├── Оплата через XTR\n' +
-                        '├── Нет гарантии 100% подписки\n' +
-                        '├── Комиссия без админки\n' +
-                        '└── Оплата не возвращается',
-                buttons: [
-                    {id: 'decline', type: 'destructive', text: '← Отказаться'},
-                    {id: 'accept', type: 'default', text: 'Принять →'}
-                ]
-            }).then((buttonId) => {
-                if (buttonId === 'accept') {
-                    localStorage.setItem('agreementAccepted', 'true');
-                    showGroupSetup();
-                } else {
-                    tg.close();
-                }
+        function showScreen(screenId) {
+            // Скрываем все экраны
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
             });
-        }
-
-        function showGroupSetup() {
-            tg.showPopup({
-                title: 'Добавление группы',
-                message: '├── Введите ссылку на группу\n' +
-                        '└── Формат: @username',
-                buttons: [
-                    {id: 'skip', type: 'default', text: 'Пропустить →'},
-                    {id: 'add', type: 'default', text: 'Добавить →'}
-                ]
-            });
-        }
-
-        // Остальные функции в том же стиле...
-        function addBalance() {
-            tg.showPopup({
-                title: 'Пополнение',
-                message: '├── 5 XTR\n├── 10 XTR\n├── 15 XTR\n└── Другая сумма',
-                buttons: [
-                    {id: '5', type: 'default', text: '5 XTR'},
-                    {id: '10', type: 'default', text: '10 XTR'},
-                    {id: '15', type: 'default', text: '15 XTR'},
-                    {id: 'custom', type: 'default', text: '+ Другая сумма'}
-                ]
-            });
+            
+            // Показываем нужный экран
+            if (screenId === 'main') {
+                document.getElementById('mainScreen').classList.add('active');
+            } else {
+                document.getElementById(screenId + 'Screen').classList.add('active');
+            }
         }
 
         function startAnalysis() {
-            tg.showPopup({
-                title: 'Анализ группы',
-                message: '└── Введите @username группы',
-                buttons: [{id: 'start', type: 'default', text: 'Запустить →'}]
-            });
-        }
-
-        function showMyStats() {
-            tg.showPopup({
-                title: 'Статистика',
-                message: '├── Баланс: 0 XTR\n' +
-                        '├── Подписчиков: 0\n' +
-                        '└── Анализов: 0',
-                buttons: [{id: 'refresh', type: 'default', text: 'Обновить →'}]
-            });
-        }
-
-        function showGlobalStats() {
-            tg.showPopup({
-                title: 'Общая статистика',
-                message: '├── Всего анализов: 0\n' +
-                        '├── Групп: 0\n' +
-                        '└── Успешность: 0%',
-                buttons: [{id: 'refresh', type: 'default', text: 'Обновить →'}]
-            });
-        }
-
-        function showSettings() {
-            tg.showPopup({
-                title: 'Настройки',
-                message: '├── ID: -\n' +
-                        '├── Группы: 0\n' +
-                        '└── Уведомления: вкл',
-                buttons: [
-                    {id: 'groups', type: 'default', text: 'Группы →'},
-                    {id: 'notifications', type: 'default', text: 'Уведомления →'}
-                ]
-            });
+            // Здесь будет логика анализа
+            showScreen('main');
         }
     </script>
 </body>
-</html> 
+</html>  
