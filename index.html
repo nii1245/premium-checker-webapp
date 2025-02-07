@@ -4,107 +4,81 @@
     <title>GiftsAds</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Основные стили */
         body {
             background-color: #000000;
             color: #808080;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-        }
-
-        /* Темная тема для всех диалогов */
-        .popup-overlay {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .popup-content {
-            background: #111111;
-            border-radius: 12px;
-            padding: 20px;
-            color: #808080;
-        }
-
-        /* Стили для инпутов */
-        input, textarea {
-            background: #111111;
-            border: 1px solid #333333;
-            color: white;
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            margin: 8px 0;
-            font-size: 14px;
-        }
-
-        /* Кнопки */
-        .button {
-            background-color: transparent;
-            border: 1px solid #333333;
-            color: white;
             padding: 16px;
+        }
+
+        /* Минималистичные кнопки */
+        .button {
+            background: transparent;
+            border: none;
+            color: #808080;
+            padding: 12px 0;
             width: 100%;
             text-align: left;
-            font-size: 15px;
-            margin: 8px 0;
-            border-radius: 10px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            transition: background-color 0.2s;
         }
 
         .button:hover {
-            background-color: #111111;
+            color: white;
         }
 
-        .button:active {
-            background-color: #222222;
+        /* Стиль для инпутов */
+        input {
+            background: #111111;
+            border: none;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            margin: 8px 0;
         }
 
-        /* Остальные стили */
-        .arrow { color: #808080; margin-right: 12px; }
-        .balance { 
-            font-size: 16px; 
-            color: white; 
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* Баланс */
+        .balance {
+            font-size: 16px;
+            color: #808080;
+            margin-bottom: 16px;
+            padding: 8px 0;
+            border-bottom: 1px solid #222222;
         }
-        .warning { 
-            background: #111111; 
-            border-radius: 10px; 
-            padding: 16px;
-            font-size: 14px;
-            line-height: 1.5;
+
+        /* Стрелка и иконки */
+        .arrow {
+            color: #555555;
+            margin-right: 12px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <!-- Главное меню -->
     <div id="mainContent">
         <div class="balance">
             ⭐ <span id="balanceAmount">0 XTR</span>
         </div>
 
-        <div class="section">
-            <button class="button" onclick="addBalance()">
-                <span class="arrow">→</span>Пополнить баланс
-            </button>
-            <button class="button" onclick="startAnalysis()">
-                <span class="arrow">→</span>Запустить анализ
-            </button>
-            <button class="button" onclick="showMyStats()">
-                <span class="arrow">→</span>Моя статистика
-            </button>
-            <button class="button" onclick="showGlobalStats()">
-                <span class="arrow">→</span>Общая статистика
-            </button>
-            <button class="button" onclick="showSettings()">
-                <span class="arrow">→</span>Настройки
-            </button>
-        </div>
+        <button class="button" onclick="addBalance()">
+            <span class="arrow">├──</span>Пополнить баланс
+        </button>
+        <button class="button" onclick="startAnalysis()">
+            <span class="arrow">├──</span>Запустить анализ
+        </button>
+        <button class="button" onclick="showMyStats()">
+            <span class="arrow">├──</span>Моя статистика
+        </button>
+        <button class="button" onclick="showGlobalStats()">
+            <span class="arrow">├──</span>Общая статистика
+        </button>
+        <button class="button" onclick="showSettings()">
+            <span class="arrow">└──</span>Настройки
+        </button>
     </div>
 
     <script>
@@ -112,7 +86,6 @@
         tg.expand();
         tg.ready();
         
-        // Устанавливаем темную тему
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#000000');
 
@@ -121,18 +94,17 @@
             showAgreement();
         }
 
-        // Функция показа соглашения
         function showAgreement() {
             tg.showPopup({
-                title: 'Пользовательское соглашение GiftsAds',
-                message: '1️⃣ Бот анализирует активность пользователей в выбранных вами группах.\n' +
-                        '2️⃣ Вы оплачиваете рекламу звёздами (XTR), бот отправляет подарки.\n' +
-                        '3️⃣ Бот НЕ гарантирует 100% подписку пользователей, но фиксирует результаты.\n' +
-                        '4️⃣ Если бот НЕ админ в группе, взымается комиссия.\n' +
-                        '5️⃣ Оплата через Telegram Stars (XTR) не возвращается.',
+                title: 'Соглашение',
+                message: '├── Анализ активности пользователей\n' +
+                        '├── Оплата через XTR\n' +
+                        '├── Нет гарантии 100% подписки\n' +
+                        '├── Комиссия без админки\n' +
+                        '└── Оплата не возвращается',
                 buttons: [
-                    {id: 'decline', type: 'destructive', text: 'Отказаться'},
-                    {id: 'accept', type: 'default', text: 'Принять'}
+                    {id: 'decline', type: 'destructive', text: '← Отказаться'},
+                    {id: 'accept', type: 'default', text: 'Принять →'}
                 ]
             }).then((buttonId) => {
                 if (buttonId === 'accept') {
@@ -144,124 +116,69 @@
             });
         }
 
-        // Функция настройки группы
         function showGroupSetup() {
             tg.showPopup({
-                title: 'Привяжите свою группу или чат',
-                message: 'Бот будет отслеживать подписчиков, чтобы автоматически фиксировать их активность.\n\n' +
-                        'Для этого добавьте бота в администраторы группы.',
+                title: 'Добавление группы',
+                message: '├── Введите ссылку на группу\n' +
+                        '└── Формат: @username',
                 buttons: [
-                    {id: 'skip', type: 'default', text: 'Пропустить'},
-                    {id: 'add', type: 'default', text: 'Добавить группу'}
+                    {id: 'skip', type: 'default', text: 'Пропустить →'},
+                    {id: 'add', type: 'default', text: 'Добавить →'}
                 ]
-            }).then((buttonId) => {
-                if (buttonId === 'add') {
-                    tg.showPopup({
-                        title: 'Добавление группы',
-                        message: 'Введите ссылку на вашу группу:\n' +
-                                'Формат: @username или https://t.me/...',
-                        buttons: [{id: 'submit', type: 'default', text: 'Добавить'}]
-                    }).then((result) => {
-                        if (result) {
-                            // Здесь будет обработка добавления группы
-                            localStorage.setItem('groupSetup', 'done');
-                        }
-                    });
-                } else {
-                    localStorage.setItem('groupSetup', 'skipped');
-                }
             });
         }
 
-        // Функции главного меню
+        // Остальные функции в том же стиле...
         function addBalance() {
             tg.showPopup({
-                title: 'Пополнение баланса',
-                message: 'Выберите сумму пополнения XTR:',
+                title: 'Пополнение',
+                message: '├── 5 XTR\n├── 10 XTR\n├── 15 XTR\n└── Другая сумма',
                 buttons: [
-                    {id: '5xtr', type: 'default', text: '⭐ 5 XTR'},
-                    {id: '10xtr', type: 'default', text: '⭐ 10 XTR'},
-                    {id: '15xtr', type: 'default', text: '⭐ 15 XTR'},
-                    {id: 'custom', type: 'default', text: '💫 Другая сумма'}
+                    {id: '5', type: 'default', text: '5 XTR'},
+                    {id: '10', type: 'default', text: '10 XTR'},
+                    {id: '15', type: 'default', text: '15 XTR'},
+                    {id: 'custom', type: 'default', text: '+ Другая сумма'}
                 ]
-            }).then((buttonId) => {
-                if (buttonId === 'custom') {
-                    tg.showPopup({
-                        title: 'Введите сумму',
-                        message: 'Укажите желаемую сумму XTR:',
-                        buttons: [{id: 'pay', type: 'default', text: 'Оплатить'}]
-                    });
-                }
             });
         }
 
         function startAnalysis() {
             tg.showPopup({
                 title: 'Анализ группы',
-                message: 'Введите ссылку на группу для анализа:\n' +
-                        'Формат: @username или https://t.me/...',
-                buttons: [
-                    {id: 'analyze', type: 'default', text: 'Запустить анализ'},
-                    {id: 'cancel', type: 'destructive', text: 'Отмена'}
-                ]
-            }).then((buttonId) => {
-                if (buttonId === 'analyze') {
-                    showAnalysisProgress();
-                }
-            });
-        }
-
-        function showAnalysisProgress() {
-            tg.showPopup({
-                title: 'Анализ группы',
-                message: '🔍 Идет анализ активности...\n\n' +
-                        '✓ Получение участников\n' +
-                        '✓ Проверка активности\n' +
-                        '⏳ Расчет стоимости\n\n' +
-                        'Пожалуйста, подождите...',
-                buttons: [{id: 'cancel', type: 'destructive', text: 'Отменить'}]
+                message: '└── Введите @username группы',
+                buttons: [{id: 'start', type: 'default', text: 'Запустить →'}]
             });
         }
 
         function showMyStats() {
             tg.showPopup({
-                title: 'Моя статистика',
-                message: '🔹 Потрачено: ⭐ 0 XTR\n' +
-                        '🔹 Получено подписчиков: 0\n' +
-                        '🔹 Последний анализ: -\n' +
-                        '🔹 Активных групп: 0\n' +
-                        '🔹 Успешность: 0%',
-                buttons: [
-                    {id: 'refresh', type: 'default', text: '🔄 Обновить'},
-                    {id: 'export', type: 'default', text: '📊 Экспорт'}
-                ]
+                title: 'Статистика',
+                message: '├── Баланс: 0 XTR\n' +
+                        '├── Подписчиков: 0\n' +
+                        '└── Анализов: 0',
+                buttons: [{id: 'refresh', type: 'default', text: 'Обновить →'}]
             });
         }
 
         function showGlobalStats() {
             tg.showPopup({
                 title: 'Общая статистика',
-                message: '🔹 Всего анализов: 0\n' +
-                        '🔹 Обработано групп: 0\n' +
-                        '🔹 Средний % подписавшихся: 0%\n' +
-                        '🔹 Всего пользователей: 0\n' +
-                        '🔹 Активных ботов: 0',
-                buttons: [{id: 'refresh', type: 'default', text: '🔄 Обновить'}]
+                message: '├── Всего анализов: 0\n' +
+                        '├── Групп: 0\n' +
+                        '└── Успешность: 0%',
+                buttons: [{id: 'refresh', type: 'default', text: 'Обновить →'}]
             });
         }
 
         function showSettings() {
             tg.showPopup({
                 title: 'Настройки',
-                message: '📌 Ваш ID: -\n' +
-                        '📊 Всего анализов: 0\n' +
-                        '📂 Ваши группы: нет\n\n' +
-                        '⚙️ Настройки уведомлений: Вкл\n' +
-                        '💫 Автоматический анализ: Выкл',
+                message: '├── ID: -\n' +
+                        '├── Группы: 0\n' +
+                        '└── Уведомления: вкл',
                 buttons: [
-                    {id: 'edit_groups', type: 'default', text: '📝 Редактировать группы'},
-                    {id: 'notifications', type: 'default', text: '🔔 Уведомления'},
-                    {id: 'delete_data', type: 'destructive', text: '🗑 Удалить данные'}
+                    {id: 'groups', type: 'default', text: 'Группы →'},
+                    {id: 'notifications', type: 'default', text: 'Уведомления →'}
                 ]
             });
         }
