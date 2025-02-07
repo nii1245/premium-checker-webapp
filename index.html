@@ -4,6 +4,7 @@
     <title>GiftsAds</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Основные стили */
         body {
             background-color: #000000;
             color: #808080;
@@ -12,17 +13,31 @@
             padding: 20px;
         }
 
-        #agreement, #groupSetup, #mainContent {
-            display: none;
+        /* Темная тема для всех диалогов */
+        .popup-overlay {
+            background: rgba(0, 0, 0, 0.9);
         }
 
-        .section-title {
+        .popup-content {
+            background: #111111;
+            border-radius: 12px;
+            padding: 20px;
             color: #808080;
-            font-size: 14px;
-            margin-bottom: 12px;
-            opacity: 0.7;
         }
 
+        /* Стили для инпутов */
+        input, textarea {
+            background: #111111;
+            border: 1px solid #333333;
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+
+        /* Кнопки */
         .button {
             background-color: transparent;
             border: 1px solid #333333;
@@ -36,83 +51,37 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            transition: background-color 0.2s;
         }
 
         .button:hover {
             background-color: #111111;
         }
 
-        .arrow {
-            color: #808080;
-            margin-right: 12px;
+        .button:active {
+            background-color: #222222;
         }
 
-        .agreement-text {
-            color: #808080;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .agreement-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .balance {
-            font-size: 16px;
-            color: white;
+        /* Остальные стили */
+        .arrow { color: #808080; margin-right: 12px; }
+        .balance { 
+            font-size: 16px; 
+            color: white; 
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-
-        .warning {
-            background: #111111;
-            border-radius: 10px;
+        .warning { 
+            background: #111111; 
+            border-radius: 10px; 
             padding: 16px;
-            margin: 16px 0;
             font-size: 14px;
-            color: #808080;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <!-- Пользовательское соглашение -->
-    <div id="agreement">
-        <div class="agreement-text">
-            <h3>Пользовательское соглашение GiftsAds</h3>
-            <p>1️⃣ Бот анализирует активность пользователей в выбранных вами группах.</p>
-            <p>2️⃣ Вы оплачиваете рекламу звёздами (XTR), бот отправляет подарки.</p>
-            <p>3️⃣ Бот НЕ гарантирует 100% подписку пользователей, но фиксирует результаты.</p>
-            <p>4️⃣ Если бот НЕ админ в группе, взымается комиссия.</p>
-            <p>5️⃣ Оплата через Telegram Stars (XTR) не возвращается.</p>
-        </div>
-        <div class="agreement-buttons">
-            <button class="button" onclick="declineAgreement()">
-                <span class="arrow">←</span>Отказаться
-            </button>
-            <button class="button" onclick="acceptAgreement()">
-                <span class="arrow">→</span>Принять
-            </button>
-        </div>
-    </div>
-
-    <!-- Настройка группы -->
-    <div id="groupSetup">
-        <div class="section-title">Привяжите свою группу или чат</div>
-        <div class="warning">
-            Бот будет отслеживать подписчиков, чтобы автоматически фиксировать их активность.
-            Для этого добавьте бота в администраторы группы.
-        </div>
-        <button class="button" onclick="addGroup()">
-            <span class="arrow">→</span>Добавить группу
-        </button>
-        <button class="button" onclick="skipGroup()">
-            <span class="arrow">→</span>Пропустить
-        </button>
-    </div>
-
     <!-- Главное меню -->
     <div id="mainContent">
         <div class="balance">
@@ -143,87 +112,157 @@
         tg.expand();
         tg.ready();
         
+        // Устанавливаем темную тему
         tg.setHeaderColor('#000000');
         tg.setBackgroundColor('#000000');
 
-        // Очищаем localStorage при запуске (временно для тестирования)
-        localStorage.clear();
-
-        // Показываем нужный экран при запуске
+        // Проверяем первый запуск
         if (!localStorage.getItem('agreementAccepted')) {
-            document.getElementById('agreement').style.display = 'block';
-        } else if (!localStorage.getItem('groupSetup')) {
-            document.getElementById('groupSetup').style.display = 'block';
-        } else {
-            document.getElementById('mainContent').style.display = 'block';
+            showAgreement();
         }
 
-        function acceptAgreement() {
-            localStorage.setItem('agreementAccepted', 'true');
-            document.getElementById('agreement').style.display = 'none';
-            document.getElementById('groupSetup').style.display = 'block';
-        }
-
-        function declineAgreement() {
-            tg.close();
-        }
-
-        function addGroup() {
+        // Функция показа соглашения
+        function showAgreement() {
             tg.showPopup({
-                title: 'Добавление группы',
-                message: 'Введите ссылку на вашу группу:',
-                buttons: [{id: 'add', type: 'default', text: 'Добавить'}]
+                title: 'Пользовательское соглашение GiftsAds',
+                message: '1️⃣ Бот анализирует активность пользователей в выбранных вами группах.\n' +
+                        '2️⃣ Вы оплачиваете рекламу звёздами (XTR), бот отправляет подарки.\n' +
+                        '3️⃣ Бот НЕ гарантирует 100% подписку пользователей, но фиксирует результаты.\n' +
+                        '4️⃣ Если бот НЕ админ в группе, взымается комиссия.\n' +
+                        '5️⃣ Оплата через Telegram Stars (XTR) не возвращается.',
+                buttons: [
+                    {id: 'decline', type: 'destructive', text: 'Отказаться'},
+                    {id: 'accept', type: 'default', text: 'Принять'}
+                ]
+            }).then((buttonId) => {
+                if (buttonId === 'accept') {
+                    localStorage.setItem('agreementAccepted', 'true');
+                    showGroupSetup();
+                } else {
+                    tg.close();
+                }
             });
         }
 
-        function skipGroup() {
-            localStorage.setItem('groupSetup', 'skipped');
-            document.getElementById('groupSetup').style.display = 'none';
-            document.getElementById('mainContent').style.display = 'block';
+        // Функция настройки группы
+        function showGroupSetup() {
+            tg.showPopup({
+                title: 'Привяжите свою группу или чат',
+                message: 'Бот будет отслеживать подписчиков, чтобы автоматически фиксировать их активность.\n\n' +
+                        'Для этого добавьте бота в администраторы группы.',
+                buttons: [
+                    {id: 'skip', type: 'default', text: 'Пропустить'},
+                    {id: 'add', type: 'default', text: 'Добавить группу'}
+                ]
+            }).then((buttonId) => {
+                if (buttonId === 'add') {
+                    tg.showPopup({
+                        title: 'Добавление группы',
+                        message: 'Введите ссылку на вашу группу:\n' +
+                                'Формат: @username или https://t.me/...',
+                        buttons: [{id: 'submit', type: 'default', text: 'Добавить'}]
+                    }).then((result) => {
+                        if (result) {
+                            // Здесь будет обработка добавления группы
+                            localStorage.setItem('groupSetup', 'done');
+                        }
+                    });
+                } else {
+                    localStorage.setItem('groupSetup', 'skipped');
+                }
+            });
         }
 
         // Функции главного меню
         function addBalance() {
             tg.showPopup({
                 title: 'Пополнение баланса',
-                message: 'Выберите сумму пополнения:',
+                message: 'Выберите сумму пополнения XTR:',
                 buttons: [
                     {id: '5xtr', type: 'default', text: '⭐ 5 XTR'},
                     {id: '10xtr', type: 'default', text: '⭐ 10 XTR'},
-                    {id: '15xtr', type: 'default', text: '⭐ 15 XTR'}
+                    {id: '15xtr', type: 'default', text: '⭐ 15 XTR'},
+                    {id: 'custom', type: 'default', text: '💫 Другая сумма'}
                 ]
+            }).then((buttonId) => {
+                if (buttonId === 'custom') {
+                    tg.showPopup({
+                        title: 'Введите сумму',
+                        message: 'Укажите желаемую сумму XTR:',
+                        buttons: [{id: 'pay', type: 'default', text: 'Оплатить'}]
+                    });
+                }
             });
         }
 
         function startAnalysis() {
             tg.showPopup({
                 title: 'Анализ группы',
-                message: 'Введите ссылку на группу для анализа:',
-                buttons: [{id: 'analyze', type: 'default', text: 'Запустить'}]
+                message: 'Введите ссылку на группу для анализа:\n' +
+                        'Формат: @username или https://t.me/...',
+                buttons: [
+                    {id: 'analyze', type: 'default', text: 'Запустить анализ'},
+                    {id: 'cancel', type: 'destructive', text: 'Отмена'}
+                ]
+            }).then((buttonId) => {
+                if (buttonId === 'analyze') {
+                    showAnalysisProgress();
+                }
+            });
+        }
+
+        function showAnalysisProgress() {
+            tg.showPopup({
+                title: 'Анализ группы',
+                message: '🔍 Идет анализ активности...\n\n' +
+                        '✓ Получение участников\n' +
+                        '✓ Проверка активности\n' +
+                        '⏳ Расчет стоимости\n\n' +
+                        'Пожалуйста, подождите...',
+                buttons: [{id: 'cancel', type: 'destructive', text: 'Отменить'}]
             });
         }
 
         function showMyStats() {
             tg.showPopup({
                 title: 'Моя статистика',
-                message: '🔹 Потрачено: ⭐ 0 XTR\n🔹 Получено подписчиков: 0\n🔹 Последний анализ: -',
-                buttons: [{id: 'refresh', type: 'default', text: 'Обновить'}]
+                message: '🔹 Потрачено: ⭐ 0 XTR\n' +
+                        '🔹 Получено подписчиков: 0\n' +
+                        '🔹 Последний анализ: -\n' +
+                        '🔹 Активных групп: 0\n' +
+                        '🔹 Успешность: 0%',
+                buttons: [
+                    {id: 'refresh', type: 'default', text: '🔄 Обновить'},
+                    {id: 'export', type: 'default', text: '📊 Экспорт'}
+                ]
             });
         }
 
         function showGlobalStats() {
             tg.showPopup({
                 title: 'Общая статистика',
-                message: '🔹 Всего анализов: 0\n🔹 Обработано групп: 0\n🔹 Средний % подписавшихся: 0%',
-                buttons: [{id: 'refresh', type: 'default', text: 'Обновить'}]
+                message: '🔹 Всего анализов: 0\n' +
+                        '🔹 Обработано групп: 0\n' +
+                        '🔹 Средний % подписавшихся: 0%\n' +
+                        '🔹 Всего пользователей: 0\n' +
+                        '🔹 Активных ботов: 0',
+                buttons: [{id: 'refresh', type: 'default', text: '🔄 Обновить'}]
             });
         }
 
         function showSettings() {
             tg.showPopup({
                 title: 'Настройки',
-                message: '📌 Ваш ID: -\n📊 Всего анализов: 0\n📂 Ваши группы: нет',
-                buttons: [{id: 'edit', type: 'default', text: 'Редактировать группы'}]
+                message: '📌 Ваш ID: -\n' +
+                        '📊 Всего анализов: 0\n' +
+                        '📂 Ваши группы: нет\n\n' +
+                        '⚙️ Настройки уведомлений: Вкл\n' +
+                        '💫 Автоматический анализ: Выкл',
+                buttons: [
+                    {id: 'edit_groups', type: 'default', text: '📝 Редактировать группы'},
+                    {id: 'notifications', type: 'default', text: '🔔 Уведомления'},
+                    {id: 'delete_data', type: 'destructive', text: '🗑 Удалить данные'}
+                ]
             });
         }
     </script>
