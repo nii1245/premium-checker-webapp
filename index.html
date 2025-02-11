@@ -262,18 +262,31 @@
                 <input type="number" class="analysis-input" placeholder="Минимум подарков" value="1">
             </div>
             
+            <div class="settings-section">
+                <div class="settings-title">Настройки анализа</div>
+                <select class="analysis-input" id="message-limit">
+                    <option value="2000">2000 сообщений</option>
+                    <option value="4000">4000 сообщений</option>
+                    <option value="6000">6000 сообщений</option>
+                    <option value="8000">8000 сообщений</option>
+                    <option value="10000">10000 сообщений</option>
+                </select>
+            </div>
+            
             <button class="button" onclick="analyzeGroup()">Анализировать</button>
             
-            <div id="analysis-results" class="settings-section" style="display: none;">
-                <div class="settings-title">Результаты анализа</div>
+            <div class="analysis-results" style="display: none;">
                 <div class="stats-card">
-                    <div class="stats-number" id="potential-subs">0</div>
+                    <div class="stats-number" id="total-potential">0</div>
                     <div class="stats-label">Потенциальных подписчиков</div>
                 </div>
-                <div class="tags-container">
-                    <div class="tag">Premium: 45%</div>
-                    <div class="tag">С подарками: 67%</div>
-                    <div class="tag">Активные: 89%</div>
+                <div class="stats-card">
+                    <div class="stats-number" id="premium-percent">0%</div>
+                    <div class="stats-label">Premium-пользователей</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number" id="avg-gifts">0</div>
+                    <div class="stats-label">Среднее количество подарков</div>
                 </div>
             </div>
             
@@ -373,23 +386,20 @@
         // Анализ группы
         function analyzeGroup() {
             const input = document.querySelector('.analysis-input').value;
+            const messageLimit = document.getElementById('message-limit').value;
+            
             if (!input) {
                 tg.showAlert('Введите ссылку на группу');
                 return;
             }
 
-            const settings = {
+            document.querySelector('.analysis-results').style.display = 'none';
+            
+            tg.sendData(JSON.stringify({
                 action: 'analyze_group',
                 group_link: input,
-                filters: {
-                    premium_only: document.getElementById('premium-only').checked,
-                    active_week: document.getElementById('active-week').checked,
-                    min_gifts: document.querySelector('input[placeholder="Минимум подарков"]').value
-                }
-            };
-
-            document.getElementById('analysis-results').style.display = 'block';
-            tg.sendData(JSON.stringify(settings));
+                message_limit: messageLimit
+            }));
         }
 
         // Добавление бота
@@ -439,6 +449,23 @@
             // Обновляем прогресс-бар
             document.querySelector('.progress-fill').style.width = (data.conversion || 0) + '%';
         }
+
+        // Обработка результатов
+        tg.onEvent('message', function(event) {
+            try {
+                const data = JSON.parse(event.text);
+                if (data.action === 'analysis_results') {
+                    document.querySelector('.analysis-results').style.display = 'block';
+                    document.getElementById('total-potential').textContent = data.stats.total_found;
+                    document.getElementById('premium-percent').textContent = 
+                        Math.round((data.stats.premium_count / data.stats.total_found) * 100) + '%';
+                    document.getElementById('avg-gifts').textContent = 
+                        Math.round(data.stats.avg_gifts * 10) / 10;
+                }
+            } catch (e) {
+                console.error('Error processing message:', e);
+            }
+        });
     </script>
 </body>
 </html> 
