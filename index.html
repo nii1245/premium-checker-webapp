@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: 'SF Pro Display', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, system-ui, BlinkMacSystemFont;
             margin: 0;
             padding: 0;
             background-color: #000;
@@ -43,18 +43,18 @@
 
         /* Меню */
         .menu-item {
-            background: #111;
+            border: 1px solid #333;
             margin: 8px 0;
             padding: 16px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: border-color 0.2s;
         }
 
         .menu-item:active {
-            background: #222;
+            border-color: #fff;
         }
 
         .menu-icon {
@@ -64,7 +64,7 @@
 
         /* Статистика */
         .stats-card {
-            background: #111;
+            border: 1px solid #333;
             border-radius: 12px;
             padding: 16px;
             margin: 8px 0;
@@ -83,19 +83,20 @@
 
         /* Анализ */
         .analysis-input {
-            background: #111;
-            border: none;
+            background: none;
+            border: 1px solid #333;
             color: #fff;
             padding: 16px;
             border-radius: 12px;
             width: 100%;
             margin: 8px 0;
             font-size: 16px;
+            box-sizing: border-box;
         }
 
         /* Настройки */
         .settings-section {
-            background: #111;
+            border: 1px solid #333;
             border-radius: 12px;
             padding: 16px;
             margin: 16px 0;
@@ -108,20 +109,20 @@
         }
 
         .button {
-            background: #0088cc;
+            background: none;
+            border: 1px solid #333;
             color: #fff;
-            border: none;
             padding: 16px;
             border-radius: 12px;
             width: 100%;
             font-size: 16px;
             margin: 8px 0;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: border-color 0.2s;
         }
 
         .button:active {
-            background: #006699;
+            border-color: #fff;
         }
 
         /* Переключатели */
@@ -130,6 +131,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 0;
+            border-bottom: 1px solid #333;
         }
 
         .switch-label {
@@ -139,10 +141,47 @@
         /* Вкладки */
         .section {
             display: none;
+            animation: fadeIn 0.3s;
         }
 
         .section.active {
             display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Дополнительные стили */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border: 1px solid #333;
+            border-radius: 12px;
+            margin: 4px;
+            font-size: 12px;
+        }
+
+        select.analysis-input {
+            appearance: none;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white'%3E%3Cpath d='M6 9L0 0h12'/%3E%3C/svg%3E") no-repeat right 16px center;
         }
     </style>
 </head>
@@ -188,6 +227,13 @@
             <div class="stats-card">
                 <div class="stats-number">0</div>
                 <div class="stats-label">Подписчиков получено</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">0%</div>
+                <div class="stats-label">Конверсия подписок</div>
             </div>
             <div class="stats-card">
                 <div class="stats-number">0</div>
@@ -195,19 +241,42 @@
             </div>
             <div class="stats-card">
                 <div class="stats-number">0 TON</div>
-                <div class="stats-label">Потрачено</div>
+                <div class="stats-label">Сэкономлено на комиссии</div>
             </div>
             <button class="button" onclick="showSection('menu')">Назад</button>
         </div>
 
         <!-- Анализ -->
         <div id="analysis" class="section">
-            <input type="text" class="analysis-input" placeholder="Вставьте ссылку на группу">
-            <button class="button" onclick="analyzeGroup()">Анализировать</button>
-            <div id="analysis-results" class="stats-card" style="display: none;">
-                <div class="stats-number" id="potential-subs">0</div>
-                <div class="stats-label">Потенциальных подписчиков</div>
+            <div class="settings-section">
+                <div class="settings-title">Источник</div>
+                <input type="text" class="analysis-input" placeholder="Вставьте ссылку на группу">
+                <div class="switch">
+                    <span class="switch-label">Только Premium</span>
+                    <input type="checkbox" id="premium-only">
+                </div>
+                <div class="switch">
+                    <span class="switch-label">Активные за неделю</span>
+                    <input type="checkbox" id="active-week" checked>
+                </div>
+                <input type="number" class="analysis-input" placeholder="Минимум подарков" value="1">
             </div>
+            
+            <button class="button" onclick="analyzeGroup()">Анализировать</button>
+            
+            <div id="analysis-results" class="settings-section" style="display: none;">
+                <div class="settings-title">Результаты анализа</div>
+                <div class="stats-card">
+                    <div class="stats-number" id="potential-subs">0</div>
+                    <div class="stats-label">Потенциальных подписчиков</div>
+                </div>
+                <div class="tags-container">
+                    <div class="tag">Premium: 45%</div>
+                    <div class="tag">С подарками: 67%</div>
+                    <div class="tag">Активные: 89%</div>
+                </div>
+            </div>
+            
             <button class="button" onclick="showSection('settings')">Настроить рассылку</button>
             <button class="button" onclick="showSection('menu')">Назад</button>
         </div>
@@ -231,11 +300,33 @@
                     <option value="3">Средний подарок (3 звезды)</option>
                     <option value="5">Большой подарок (5 звезд)</option>
                 </select>
+                <div class="switch">
+                    <span class="switch-label">Только с подарками</span>
+                    <input type="checkbox" id="gifts-only" checked>
+                </div>
+                <div class="switch">
+                    <span class="switch-label">Premium пользователи</span>
+                    <input type="checkbox" id="premium-users">
+                </div>
+                <input type="number" class="analysis-input" placeholder="Лимит рассылки в день" value="100">
             </div>
 
             <div class="settings-section">
                 <div class="settings-title">Текст сообщения</div>
                 <textarea class="analysis-input" rows="4" placeholder="Введите текст сообщения"></textarea>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Автоматизация</div>
+                <div class="switch">
+                    <span class="switch-label">Автопроверка подписок</span>
+                    <input type="checkbox" id="auto-check" checked>
+                </div>
+                <select class="analysis-input" id="check-interval">
+                    <option value="24">Каждые 24 часа</option>
+                    <option value="48">Каждые 48 часов</option>
+                    <option value="72">Каждые 72 часа</option>
+                </select>
             </div>
 
             <button class="button" onclick="saveSettings()">Сохранить</button>
@@ -253,6 +344,10 @@
                 <div class="stats-card">
                     <strong>Сколько стоит?</strong>
                     <p>Комиссия зависит от настроек. С ботом-админом платите только за успешные подписки.</p>
+                </div>
+                <div class="stats-card">
+                    <strong>Как добавить бота?</strong>
+                    <p>Перейдите в настройки, вставьте ссылку на вашу группу и нажмите "Добавить бота". Затем добавьте бота в администраторы группы.</p>
                 </div>
             </div>
             <button class="button" onclick="showSection('menu')">Назад</button>
@@ -283,11 +378,18 @@
                 return;
             }
 
-            // Отправляем запрос на анализ
-            tg.sendData(JSON.stringify({
+            const settings = {
                 action: 'analyze_group',
-                group_link: input
-            }));
+                group_link: input,
+                filters: {
+                    premium_only: document.getElementById('premium-only').checked,
+                    active_week: document.getElementById('active-week').checked,
+                    min_gifts: document.querySelector('input[placeholder="Минимум подарков"]').value
+                }
+            };
+
+            document.getElementById('analysis-results').style.display = 'block';
+            tg.sendData(JSON.stringify(settings));
         }
 
         // Добавление бота
@@ -310,10 +412,32 @@
                 action: 'save_settings',
                 gifts_enabled: document.getElementById('gifts-enabled').checked,
                 gift_type: document.getElementById('gift-type').value,
-                message: document.querySelector('textarea').value
+                message: document.querySelector('textarea').value,
+                targeting: {
+                    gifts_only: document.getElementById('gifts-only').checked,
+                    premium_users: document.getElementById('premium-users').checked,
+                    daily_limit: document.querySelector('input[placeholder="Лимит рассылки в день"]').value
+                },
+                automation: {
+                    auto_check: document.getElementById('auto-check').checked,
+                    check_interval: document.getElementById('check-interval').value
+                }
             };
 
             tg.sendData(JSON.stringify(settings));
+            tg.showAlert('Настройки сохранены');
+        }
+
+        // Обновление статистики
+        function updateStats(data) {
+            const numbers = document.querySelectorAll('.stats-number');
+            numbers[0].textContent = data.subscribers || '0';
+            numbers[1].textContent = data.conversion ? data.conversion + '%' : '0%';
+            numbers[2].textContent = data.gifts || '0';
+            numbers[3].textContent = data.saved ? data.saved + ' TON' : '0 TON';
+            
+            // Обновляем прогресс-бар
+            document.querySelector('.progress-fill').style.width = (data.conversion || 0) + '%';
         }
     </script>
 </body>
