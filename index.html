@@ -471,6 +471,9 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
+        // Добавляем токен бота (можно получить из initData)
+        const BOT_TOKEN = tg.initDataUnsafe.query_id; // или передать другим безопасным способом
+
         // Принятие соглашения
         function acceptAgreement() {
             document.getElementById('agreement').style.display = 'none';
@@ -502,11 +505,21 @@
             document.getElementById('progress-percent').textContent = '0';
             document.getElementById('progress-found').textContent = '0';
             
-            tg.sendData(JSON.stringify({
-                action: 'analyze_group',
-                group_link: input,
-                message_limit: messageLimit
-            }));
+            // Вместо tg.sendData используем fetch для отправки запроса боту
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: tg.initDataUnsafe.user.id,
+                    text: JSON.stringify({
+                        action: 'analyze_group',
+                        group_link: input,
+                        message_limit: messageLimit
+                    })
+                })
+            });
         }
 
         // Добавление бота
