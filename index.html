@@ -1,177 +1,221 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>GiftsAds</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Manager</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            background-color: #000000;
-            color: #808080;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 16px;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #fff);
+            color: var(--tg-theme-text-color, #000);
         }
-
-        .screen {
-            display: none;
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
-
-        .screen.active {
-            display: block;
+        .section {
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
-
-        /* Минималистичные кнопки */
         .button {
-            background: transparent;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #fff);
             border: none;
-            color: #808080;
-            padding: 12px 0;
-            width: 100%;
-            text-align: left;
-            font-size: 16px;
+            padding: 15px 20px;
+            border-radius: 8px;
             cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid var(--tg-theme-hint-color, #999);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .group-item {
+            padding: 15px;
+            margin: 10px 0;
+            background-color: var(--tg-theme-bg-color, #fff);
+            border-radius: 8px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-
-        .button:hover {
-            color: white;
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
         }
-
-        /* Поле ввода */
-        .input-field {
-            background: #111111;
+        .tab-button {
+            flex: 1;
+            padding: 10px;
             border: none;
-            color: white;
-            padding: 12px;
-            width: calc(100% - 24px);
-            font-size: 16px;
-            margin: 8px 0;
+            background: none;
+            color: var(--tg-theme-hint-color, #999);
+            cursor: pointer;
         }
-
-        /* Заголовок */
-        .title {
-            color: #808080;
-            font-size: 14px;
-            margin: 24px 0 12px 0;
-        }
-
-        /* Баланс */
-        .balance {
-            font-size: 16px;
-            color: #808080;
-            margin-bottom: 16px;
-            padding: 8px 0;
-            border-bottom: 1px solid #222222;
-        }
-
-        /* Стрелка */
-        .arrow {
-            color: #555555;
-            margin-right: 12px;
-            font-family: monospace;
+        .tab-button.active {
+            color: var(--tg-theme-button-color, #2481cc);
+            border-bottom: 2px solid var(--tg-theme-button-color, #2481cc);
         }
     </style>
 </head>
 <body>
-    <!-- Главное меню -->
-    <div id="mainScreen" class="screen active">
-        <div class="balance">
-            ⭐ <span id="balanceAmount">0 XTR</span>
+    <div class="container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('groups')">Группы</button>
+            <button class="tab-button" onclick="showTab('scanner')">Сканер</button>
+            <button class="tab-button" onclick="showTab('checker')">Проверка</button>
         </div>
 
-        <button class="button" onclick="showScreen('balance')">
-            <span class="arrow">├──</span>Пополнить баланс
-        </button>
-        <button class="button" onclick="showScreen('analysis')">
-            <span class="arrow">├──</span>Запустить анализ
-        </button>
-        <button class="button" onclick="showScreen('stats')">
-            <span class="arrow">├──</span>Моя статистика
-        </button>
-        <button class="button" onclick="showScreen('global')">
-            <span class="arrow">├──</span>Общая статистика
-        </button>
-        <button class="button" onclick="showScreen('settings')">
-            <span class="arrow">└──</span>Настройки
-        </button>
-    </div>
-
-    <!-- Экран анализа -->
-    <div id="analysisScreen" class="screen">
-        <div class="title">Анализ группы</div>
-        <input type="text" class="input-field" placeholder="Введите @username группы">
-        <button class="button" onclick="startAnalysis()">
-            <span class="arrow">└──</span>Запустить
-        </button>
-        <button class="button" onclick="showScreen('main')">
-            <span class="arrow">└──</span>Назад
-        </button>
-    </div>
-
-    <!-- Экран баланса -->
-    <div id="balanceScreen" class="screen">
-        <div class="title">Пополнение баланса</div>
-        <button class="button">
-            <span class="arrow">├──</span>5 XTR
-        </button>
-        <button class="button">
-            <span class="arrow">├──</span>10 XTR
-        </button>
-        <button class="button">
-            <span class="arrow">├──</span>15 XTR
-        </button>
-        <button class="button">
-            <span class="arrow">├──</span>Другая сумма
-        </button>
-        <button class="button" onclick="showScreen('main')">
-            <span class="arrow">└──</span>Назад
-        </button>
-    </div>
-
-    <!-- Остальные экраны -->
-    <div id="statsScreen" class="screen">
-        <div class="title">Моя статистика</div>
-        <div class="button">
-            <span class="arrow">├──</span>Баланс: 0 XTR
+        <!-- Секция управления группами -->
+        <div id="groups-tab" class="section">
+            <h3>Управление группами</h3>
+            <input type="text" class="input-field" id="group-link" placeholder="Ссылка на группу">
+            <button class="button" onclick="addGroup()">Добавить группу</button>
+            <div id="groups-list">
+                <!-- Список групп будет добавляться здесь -->
+            </div>
         </div>
-        <div class="button">
-            <span class="arrow">├──</span>Подписчиков: 0
+
+        <!-- Секция сканера -->
+        <div id="scanner-tab" class="section" style="display: none;">
+            <h3>Сканер пользователей</h3>
+            <select class="input-field" id="scan-group">
+                <!-- Список групп для сканирования -->
+            </select>
+            <input type="number" class="input-field" id="message-limit" placeholder="Количество сообщений">
+            <button class="button" onclick="startScanning()">Начать сканирование</button>
+            <div id="scan-results">
+                <!-- Результаты сканирования -->
+            </div>
         </div>
-        <div class="button">
-            <span class="arrow">├──</span>Анализов: 0
+
+        <!-- Секция проверки подписок -->
+        <div id="checker-tab" class="section" style="display: none;">
+            <h3>Проверка подписок</h3>
+            <input type="text" class="input-field" id="user-id" placeholder="ID пользователя">
+            <select class="input-field" id="check-group">
+                <!-- Список групп для проверки -->
+            </select>
+            <button class="button" onclick="checkSubscription()">Проверить подписку</button>
+            <div id="check-result">
+                <!-- Результат проверки -->
+            </div>
         </div>
-        <button class="button" onclick="showScreen('main')">
-            <span class="arrow">└──</span>Назад
-        </button>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
-        
-        tg.setHeaderColor('#000000');
-        tg.setBackgroundColor('#000000');
 
-        function showScreen(screenId) {
-            // Скрываем все экраны
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            
-            // Показываем нужный экран
-            if (screenId === 'main') {
-                document.getElementById('mainScreen').classList.add('active');
-            } else {
-                document.getElementById(screenId + 'Screen').classList.add('active');
+        // Показ/скрытие вкладок
+        function showTab(tabName) {
+            document.querySelectorAll('.section').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // Добавление группы
+        function addGroup() {
+            const groupLink = document.getElementById('group-link').value;
+            if (!groupLink) {
+                tg.showAlert('Введите ссылку на группу');
+                return;
             }
+
+            tg.sendData(JSON.stringify({
+                action: 'add_group',
+                group_link: groupLink
+            }));
         }
 
-        function startAnalysis() {
-            // Здесь будет логика анализа
-            showScreen('main');
+        // Начало сканирования
+        function startScanning() {
+            const groupId = document.getElementById('scan-group').value;
+            const messageLimit = document.getElementById('message-limit').value;
+
+            if (!groupId || !messageLimit) {
+                tg.showAlert('Заполните все поля');
+                return;
+            }
+
+            tg.sendData(JSON.stringify({
+                action: 'start_scan',
+                group_id: groupId,
+                message_limit: messageLimit
+            }));
         }
+
+        // Проверка подписки
+        function checkSubscription() {
+            const userId = document.getElementById('user-id').value;
+            const groupId = document.getElementById('check-group').value;
+
+            if (!userId || !groupId) {
+                tg.showAlert('Заполните все поля');
+                return;
+            }
+
+            tg.sendData(JSON.stringify({
+                action: 'check_subscription',
+                user_id: userId,
+                group_id: groupId
+            }));
+        }
+
+        // Обновление списка групп
+        function updateGroupsList(groups) {
+            const groupsList = document.getElementById('groups-list');
+            groupsList.innerHTML = '';
+            
+            groups.forEach(group => {
+                const groupElement = document.createElement('div');
+                groupElement.className = 'group-item';
+                groupElement.innerHTML = `
+                    <div>
+                        <strong>${group.title}</strong><br>
+                        <small>${group.link}</small>
+                    </div>
+                    <button onclick="removeGroup('${group.id}')" class="button">Удалить</button>
+                `;
+                groupsList.appendChild(groupElement);
+            });
+
+            // Обновляем списки выбора групп
+            updateGroupSelects(groups);
+        }
+
+        // Обновление списков выбора групп
+        function updateGroupSelects(groups) {
+            const scanGroup = document.getElementById('scan-group');
+            const checkGroup = document.getElementById('check-group');
+            
+            const options = groups.map(group => 
+                `<option value="${group.id}">${group.title}</option>`
+            ).join('');
+
+            scanGroup.innerHTML = options;
+            checkGroup.innerHTML = options;
+        }
+
+        // Получаем данные при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            tg.sendData(JSON.stringify({
+                action: 'get_groups'
+            }));
+        });
     </script>
 </body>
-</html>  
+</html> 
