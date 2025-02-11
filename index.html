@@ -496,28 +496,27 @@
                 return;
             }
 
-            // Показываем загрузку сразу
+            // Показываем загрузку
             document.querySelector('.loading-overlay').style.display = 'flex';
             document.querySelector('.analysis-results').style.display = 'none';
-            
-            // Используем MainButton вместо sendData
-            tg.MainButton.setText('АНАЛИЗ');
-            tg.MainButton.hide();  // Скрываем кнопку
-            tg.MainButton.onClick(() => {
-                const data = {
-                    action: 'analyze_group',
-                    group_link: input,
-                    message_limit: messageLimit
-                };
-                
-                // Отправляем данные через MainButton
-                window.Telegram.WebApp.sendData(JSON.stringify(data));
+
+            // Отправляем запрос через fetch вместо WebApp
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: tg.initDataUnsafe.user.id,
+                    text: JSON.stringify({
+                        action: 'analyze_group',
+                        group_link: input,
+                        message_limit: messageLimit
+                    })
+                })
             });
-            
-            // Эмулируем клик
-            tg.MainButton.onClick();
-            
-            // Предотвращаем закрытие
+
+            // Предотвращаем закрытие приложения
             return false;
         }
 
