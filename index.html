@@ -183,6 +183,90 @@
             appearance: none;
             background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white'%3E%3Cpath d='M6 9L0 0h12'/%3E%3C/svg%3E") no-repeat right 16px center;
         }
+
+        /* Стили для анимации загрузки */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: #333;
+            height: 4px;
+            border-radius: 2px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #fff;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text, .progress-stats {
+            color: #888;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для результатов */
+        .analysis-results {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .stats-card {
+            background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #333;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -274,6 +358,22 @@
             </div>
             
             <button class="button" onclick="analyzeGroup()">Анализировать</button>
+            
+            <div class="loading-overlay" style="display: none;">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Анализируем группу...</div>
+                    <div class="loading-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text">Проверено: <span id="progress-percent">0</span>%</div>
+                        <div class="progress-stats">
+                            Найдено пользователей: <span id="progress-found">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="analysis-results" style="display: none;">
                 <div class="stats-card">
@@ -393,7 +493,14 @@
                 return;
             }
 
+            // Показываем оверлей загрузки
+            document.querySelector('.loading-overlay').style.display = 'flex';
             document.querySelector('.analysis-results').style.display = 'none';
+            
+            // Сбрасываем прогресс
+            document.querySelector('.progress-fill').style.width = '0%';
+            document.getElementById('progress-percent').textContent = '0';
+            document.getElementById('progress-found').textContent = '0';
             
             tg.sendData(JSON.stringify({
                 action: 'analyze_group',
@@ -450,17 +557,37 @@
             document.querySelector('.progress-fill').style.width = (data.conversion || 0) + '%';
         }
 
-        // Обработка результатов
+        // Обработка сообщений от бота
         tg.onEvent('message', function(event) {
             try {
                 const data = JSON.parse(event.text);
-                if (data.action === 'analysis_results') {
+                
+                if (data.action === 'analysis_progress') {
+                    // Обновляем прогресс
+                    document.querySelector('.progress-fill').style.width = data.progress + '%';
+                    document.getElementById('progress-percent').textContent = data.progress;
+                    document.getElementById('progress-found').textContent = data.found;
+                    
+                    // Обновляем текст
+                    document.querySelector('.loading-text').textContent = 
+                        `Анализируем группу... ${data.progress}%`;
+                }
+                else if (data.action === 'analysis_results') {
+                    // Скрываем оверлей загрузки
+                    document.querySelector('.loading-overlay').style.display = 'none';
+                    
+                    // Показываем результаты
                     document.querySelector('.analysis-results').style.display = 'block';
                     document.getElementById('total-potential').textContent = data.stats.total_found;
                     document.getElementById('premium-percent').textContent = 
                         Math.round((data.stats.premium_count / data.stats.total_found) * 100) + '%';
                     document.getElementById('avg-gifts').textContent = 
                         Math.round(data.stats.avg_gifts * 10) / 10;
+                }
+                else if (data.action === 'analysis_error') {
+                    // Показываем ошибку
+                    document.querySelector('.loading-overlay').style.display = 'none';
+                    tg.showAlert('Ошибка при анализе: ' + data.error);
                 }
             } catch (e) {
                 console.error('Error processing message:', e);
