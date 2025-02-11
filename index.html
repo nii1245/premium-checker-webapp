@@ -3,115 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Bot Manager</title>
+    <title>Telegram Analytics</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'SF Pro Display', -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: var(--tg-theme-bg-color, #fff);
-            color: var(--tg-theme-text-color, #000);
+            padding: 0;
+            background-color: #000;
+            color: #fff;
         }
+
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            max-width: 100%;
+            padding: 16px;
         }
-        .section {
-            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+
+        /* Соглашение */
+        .agreement {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
             padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .button {
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #fff);
-            border: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-        .input-field {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 1px solid var(--tg-theme-hint-color, #999);
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        .group-item {
-            padding: 15px;
-            margin: 10px 0;
-            background-color: var(--tg-theme-bg-color, #fff);
-            border-radius: 8px;
+            z-index: 100;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .agreement-text {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        /* Меню */
+        .menu-item {
+            background: #111;
+            margin: 8px 0;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
             align-items: center;
-        }
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        .tab-button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: none;
-            color: var(--tg-theme-hint-color, #999);
             cursor: pointer;
+            transition: background 0.2s;
         }
-        .tab-button.active {
-            color: var(--tg-theme-button-color, #2481cc);
-            border-bottom: 2px solid var(--tg-theme-button-color, #2481cc);
+
+        .menu-item:active {
+            background: #222;
+        }
+
+        .menu-icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        /* Статистика */
+        .stats-card {
+            background: #111;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+        }
+
+        .stats-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .stats-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Анализ */
+        .analysis-input {
+            background: #111;
+            border: none;
+            color: #fff;
+            padding: 16px;
+            border-radius: 12px;
+            width: 100%;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        /* Настройки */
+        .settings-section {
+            background: #111;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #888;
+        }
+
+        .button {
+            background: #0088cc;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 16px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .button:active {
+            background: #006699;
+        }
+
+        /* Переключатели */
+        .switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+
+        .switch-label {
+            color: #fff;
+        }
+
+        /* Вкладки */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="tab-buttons">
-            <button class="tab-button active" onclick="showTab('groups')">Группы</button>
-            <button class="tab-button" onclick="showTab('scanner')">Сканер</button>
-            <button class="tab-button" onclick="showTab('checker')">Проверка</button>
+    <!-- Соглашение -->
+    <div id="agreement" class="agreement">
+        <div class="agreement-text">
+            Пользовательское соглашение:
+            
+            1. Бот анализирует открытые данные групп
+            2. Вы соглашаетесь на обработку данных
+            3. Комиссия зависит от настроек бота
+            
+            Продолжая, вы принимаете условия использования.
         </div>
+        <button class="button" onclick="acceptAgreement()">Принять и продолжить</button>
+    </div>
 
-        <!-- Секция управления группами -->
-        <div id="groups-tab" class="section">
-            <h3>Управление группами</h3>
-            <input type="text" class="input-field" id="group-link" placeholder="Ссылка на группу">
-            <button class="button" onclick="addGroup()">Добавить группу</button>
-            <div id="groups-list">
-                <!-- Список групп будет добавляться здесь -->
+    <!-- Основной контент -->
+    <div class="container" id="main-content" style="display: none;">
+        <!-- Меню -->
+        <div id="menu" class="section active">
+            <div class="menu-item" onclick="showSection('stats')">
+                <div class="menu-icon">📊</div>
+                <div>Моя статистика</div>
+            </div>
+            <div class="menu-item" onclick="showSection('analysis')">
+                <div class="menu-icon">🔍</div>
+                <div>Анализ источника</div>
+            </div>
+            <div class="menu-item" onclick="showSection('settings')">
+                <div class="menu-icon">⚙️</div>
+                <div>Настройки</div>
+            </div>
+            <div class="menu-item" onclick="showSection('faq')">
+                <div class="menu-icon">❓</div>
+                <div>Вопросы и ответы</div>
             </div>
         </div>
 
-        <!-- Секция сканера -->
-        <div id="scanner-tab" class="section" style="display: none;">
-            <h3>Сканер пользователей</h3>
-            <select class="input-field" id="scan-group">
-                <!-- Список групп для сканирования -->
-            </select>
-            <input type="number" class="input-field" id="message-limit" placeholder="Количество сообщений">
-            <button class="button" onclick="startScanning()">Начать сканирование</button>
-            <div id="scan-results">
-                <!-- Результаты сканирования -->
+        <!-- Статистика -->
+        <div id="stats" class="section">
+            <div class="stats-card">
+                <div class="stats-number">0</div>
+                <div class="stats-label">Подписчиков получено</div>
             </div>
+            <div class="stats-card">
+                <div class="stats-number">0</div>
+                <div class="stats-label">Подарков отправлено</div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-number">0 TON</div>
+                <div class="stats-label">Потрачено</div>
+            </div>
+            <button class="button" onclick="showSection('menu')">Назад</button>
         </div>
 
-        <!-- Секция проверки подписок -->
-        <div id="checker-tab" class="section" style="display: none;">
-            <h3>Проверка подписок</h3>
-            <input type="text" class="input-field" id="user-id" placeholder="ID пользователя">
-            <select class="input-field" id="check-group">
-                <!-- Список групп для проверки -->
-            </select>
-            <button class="button" onclick="checkSubscription()">Проверить подписку</button>
-            <div id="check-result">
-                <!-- Результат проверки -->
+        <!-- Анализ -->
+        <div id="analysis" class="section">
+            <input type="text" class="analysis-input" placeholder="Вставьте ссылку на группу">
+            <button class="button" onclick="analyzeGroup()">Анализировать</button>
+            <div id="analysis-results" class="stats-card" style="display: none;">
+                <div class="stats-number" id="potential-subs">0</div>
+                <div class="stats-label">Потенциальных подписчиков</div>
             </div>
+            <button class="button" onclick="showSection('settings')">Настроить рассылку</button>
+            <button class="button" onclick="showSection('menu')">Назад</button>
+        </div>
+
+        <!-- Настройки -->
+        <div id="settings" class="section">
+            <div class="settings-section">
+                <div class="settings-title">Ваша группа</div>
+                <input type="text" class="analysis-input" placeholder="Ссылка на вашу группу">
+                <button class="button" onclick="addBot()">Добавить бота</button>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Настройки рассылки</div>
+                <div class="switch">
+                    <span class="switch-label">Отправлять подарки</span>
+                    <input type="checkbox" id="gifts-enabled" checked>
+                </div>
+                <select class="analysis-input" id="gift-type">
+                    <option value="1">Маленький подарок (1 звезда)</option>
+                    <option value="3">Средний подарок (3 звезды)</option>
+                    <option value="5">Большой подарок (5 звезд)</option>
+                </select>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-title">Текст сообщения</div>
+                <textarea class="analysis-input" rows="4" placeholder="Введите текст сообщения"></textarea>
+            </div>
+
+            <button class="button" onclick="saveSettings()">Сохранить</button>
+            <button class="button" onclick="showSection('menu')">Назад</button>
+        </div>
+
+        <!-- FAQ -->
+        <div id="faq" class="section">
+            <div class="settings-section">
+                <div class="settings-title">Частые вопросы</div>
+                <div class="stats-card">
+                    <strong>Как это работает?</strong>
+                    <p>Бот анализирует активность пользователей и отправляет предложения наиболее заинтересованным.</p>
+                </div>
+                <div class="stats-card">
+                    <strong>Сколько стоит?</strong>
+                    <p>Комиссия зависит от настроек. С ботом-админом платите только за успешные подписки.</p>
+                </div>
+            </div>
+            <button class="button" onclick="showSection('menu')">Назад</button>
         </div>
     </div>
 
@@ -119,103 +263,58 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Показ/скрытие вкладок
-        function showTab(tabName) {
-            document.querySelectorAll('.section').forEach(tab => tab.style.display = 'none');
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`${tabName}-tab`).style.display = 'block';
-            event.target.classList.add('active');
+        // Принятие соглашения
+        function acceptAgreement() {
+            document.getElementById('agreement').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
         }
 
-        // Добавление группы
-        function addGroup() {
-            const groupLink = document.getElementById('group-link').value;
-            if (!groupLink) {
+        // Навигация
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Анализ группы
+        function analyzeGroup() {
+            const input = document.querySelector('.analysis-input').value;
+            if (!input) {
+                tg.showAlert('Введите ссылку на группу');
+                return;
+            }
+
+            // Отправляем запрос на анализ
+            tg.sendData(JSON.stringify({
+                action: 'analyze_group',
+                group_link: input
+            }));
+        }
+
+        // Добавление бота
+        function addBot() {
+            const input = document.querySelector('.analysis-input').value;
+            if (!input) {
                 tg.showAlert('Введите ссылку на группу');
                 return;
             }
 
             tg.sendData(JSON.stringify({
-                action: 'add_group',
-                group_link: groupLink
+                action: 'add_bot',
+                group_link: input
             }));
         }
 
-        // Начало сканирования
-        function startScanning() {
-            const groupId = document.getElementById('scan-group').value;
-            const messageLimit = document.getElementById('message-limit').value;
+        // Сохранение настроек
+        function saveSettings() {
+            const settings = {
+                action: 'save_settings',
+                gifts_enabled: document.getElementById('gifts-enabled').checked,
+                gift_type: document.getElementById('gift-type').value,
+                message: document.querySelector('textarea').value
+            };
 
-            if (!groupId || !messageLimit) {
-                tg.showAlert('Заполните все поля');
-                return;
-            }
-
-            tg.sendData(JSON.stringify({
-                action: 'start_scan',
-                group_id: groupId,
-                message_limit: messageLimit
-            }));
+            tg.sendData(JSON.stringify(settings));
         }
-
-        // Проверка подписки
-        function checkSubscription() {
-            const userId = document.getElementById('user-id').value;
-            const groupId = document.getElementById('check-group').value;
-
-            if (!userId || !groupId) {
-                tg.showAlert('Заполните все поля');
-                return;
-            }
-
-            tg.sendData(JSON.stringify({
-                action: 'check_subscription',
-                user_id: userId,
-                group_id: groupId
-            }));
-        }
-
-        // Обновление списка групп
-        function updateGroupsList(groups) {
-            const groupsList = document.getElementById('groups-list');
-            groupsList.innerHTML = '';
-            
-            groups.forEach(group => {
-                const groupElement = document.createElement('div');
-                groupElement.className = 'group-item';
-                groupElement.innerHTML = `
-                    <div>
-                        <strong>${group.title}</strong><br>
-                        <small>${group.link}</small>
-                    </div>
-                    <button onclick="removeGroup('${group.id}')" class="button">Удалить</button>
-                `;
-                groupsList.appendChild(groupElement);
-            });
-
-            // Обновляем списки выбора групп
-            updateGroupSelects(groups);
-        }
-
-        // Обновление списков выбора групп
-        function updateGroupSelects(groups) {
-            const scanGroup = document.getElementById('scan-group');
-            const checkGroup = document.getElementById('check-group');
-            
-            const options = groups.map(group => 
-                `<option value="${group.id}">${group.title}</option>`
-            ).join('');
-
-            scanGroup.innerHTML = options;
-            checkGroup.innerHTML = options;
-        }
-
-        // Получаем данные при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            tg.sendData(JSON.stringify({
-                action: 'get_groups'
-            }));
-        });
     </script>
 </body>
 </html> 
