@@ -496,23 +496,12 @@
                 return;
             }
 
-            // Показываем оверлей загрузки
-            document.querySelector('.loading-overlay').style.display = 'flex';
-            document.querySelector('.analysis-results').style.display = 'none';
-            
             // Отправляем данные через WebApp
-            const data = {
+            tg.sendData(JSON.stringify({
                 action: 'analyze_group',
                 group_link: input,
                 message_limit: messageLimit
-            };
-            
-            console.log('Отправляем данные:', data); // Для отладки
-            
-            // Используем initDataUnsafe для проверки
-            console.log('initDataUnsafe:', tg.initDataUnsafe); // Для отладки
-            
-            tg.sendData(JSON.stringify(data));
+            }));
         }
 
         // Добавляем обработчик для предотвращения закрытия WebApp
@@ -575,15 +564,15 @@
             try {
                 const data = JSON.parse(event.text);
                 
-                if (data.action === 'analysis_progress') {
-                    // Обновляем прогресс
-                    document.querySelector('.progress-fill').style.width = data.progress + '%';
-                    document.getElementById('progress-percent').textContent = data.progress;
-                    document.getElementById('progress-found').textContent = data.found;
+                if (data.action === 'analysis_start') {
+                    // Показываем оверлей загрузки
+                    document.querySelector('.loading-overlay').style.display = 'flex';
+                    document.querySelector('.analysis-results').style.display = 'none';
                     
-                    // Обновляем текст
-                    document.querySelector('.loading-text').textContent = 
-                        `Анализируем группу... ${data.progress}%`;
+                    // Сбрасываем прогресс
+                    document.querySelector('.progress-fill').style.width = '0%';
+                    document.getElementById('progress-percent').textContent = '0';
+                    document.getElementById('progress-found').textContent = '0';
                 }
                 else if (data.action === 'analysis_results') {
                     // Скрываем оверлей загрузки
